@@ -12,11 +12,11 @@ import Chat from './components/Chat/Chat'
 export default function App() {
     return (
         <Router>
-            {/* <Child /> */}
-            <Routes>
+            <Child />
+            {/* <Routes>
                 <Route path="/" exact element={<Join />} />
                 <Route path="/chat" element={<Chat />} />
-            </Routes>
+            </Routes> */}
         </Router>
     )
 }

@@ -3,17 +3,67 @@ import queryString from 'query-string';
 import { useLocation } from 'react-router-dom';
 import io from 'socket.io-client';
 
+import './Chat.css';
+
+import InfoBar from '../InfoBar/InfoBar';
+import Input from '../Input/Input';
+import Messages from '../Messages/Messages';
+
+let socket;
 const Chat = () => {
     const location = useLocation();
+    const [name, setName] = useState('');
+    const [room, setRoom] = useState('');
+    const [message, setMessage] = useState('');
+    const [messages, setMessages] = useState([]);
+    const ENDPOINT = 'localhost:3000';
 
     useEffect(() => {
-        const data = queryString.parse(location.search);
+        const {name, room} = queryString.parse(location.search);
 
-        console.log(location);
-        console.log(data);
-    })
+        socket = io(ENDPOINT);
+        console.log(socket);
+
+        setName(name);
+        setRoom(room);
+
+        socket.emit('join', {name: name, room: room}, () => {
+            
+        });
+
+        return () => {
+            socket.emit('disconnect');
+            socket.off();
+        }
+
+    }, [ENDPOINT, location.search]);
+    
+    useEffect(() => {
+        socket.on('message', (message) => {
+            setMessages({...messages, message});
+        });
+    }, [messages] )
+
+    // sending messages
+
+    const sendMessage = (event) => {
+        if (message) {
+            socket.emit('sendMessage', message, () => setMessage(''));
+        }
+    }
+
+    console.log(message, messages);
+    
+    
     return (
-        <h1>Chat</h1>
+        <div className="outerContainer">
+            <div className="container">
+                <InfoBar room={room}/>
+                <Messages messages={messages} name={name}/>
+                <Input message={message} setMessage={setMessage} sendMessage={sendMessage}/>
+            {/* <input value={message} onChange={(event) => setMessage(event.target.value)} onKeyPress={event=>event.key === 'Enter'? sendMessage(event): null}  /> */}
+            </div>
+        </div>
     )
 }
 
